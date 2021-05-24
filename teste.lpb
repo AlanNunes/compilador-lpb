@@ -1,2 +1,8 @@
-int
-agora
+inteiro variavel = "hello world"
+se 10.50 >= 20.29846 então
+    escreva(variavel)
+senão 10 == 20 então
+    escreva("batata frita")
+fimse
+
+inteiro = 10 * 97
