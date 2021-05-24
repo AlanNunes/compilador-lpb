@@ -12,10 +12,10 @@ valor_numerico = digitos + '.'
 valor_texto = caracteres + ' '
 
 # Representa que o valor do token é inteiro
-inteiro = 'inteiro'
+inteiro = 'v_inteiro'
 # Representa que o valor do token é flutuante
-flutuante = 'flutuante'
+flutuante = 'v_flutuante'
 # Representa que o valor do token é um texto
-texto = 'texto'
+texto = 'v_texto'
 # Representa um valor númerico
-numero = 'numero'
+numero = 'v_numérico'

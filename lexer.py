@@ -15,8 +15,8 @@ class Lexer:
     _texto = ''
     _indiceAtual = 0
     _carac_atual = ''
-    _linha = 0
-    _coluna = 0
+    _linha = 1
+    _coluna = 1
     _tokens = []
     def __init__(self, texto):
         self._texto = texto
@@ -91,6 +91,7 @@ class Lexer:
         valor = ''
         pos = self.__retornaPosicaoAtual()
         tipo = valores.texto
+        self.__avancaColuna()
         while not self.__EOF() and self.__retornaCaracterAtual() in valores.valor_texto and self.__retornaCaracterAtual() != "\"":
             valor += self.__retornaCaracterAtual()
             self.__avancaColuna()
@@ -154,7 +155,6 @@ class Lexer:
                 tkn_num = self.__retornaNumero()
                 self.__adicionaToken(tkn_num)
             elif caracter_atual == "\"":
-                self.__avancaColuna()
                 tkn_texto = self.__retornaTexto()
                 self.__adicionaToken(tkn_texto)
             elif caracter_atual in op_rel.todos or caracter_atual + caracter_posterior in op_rel.todos:
@@ -163,6 +163,10 @@ class Lexer:
             elif caracter_atual in op_arit.todos:
                 tkn_op_arit = self.__retornaOperadorAritmetico()
                 self.__adicionaToken(tkn_op_arit)
+            elif caracter_atual == '.':
+                pos = self.__retornaPosicaoAtual()
+                tkn_ponto = Token(tipos_tokens.ponto, pos)
+                self.__adicionaToken(tkn_ponto)
             else:
                 self.__avancaColuna()
         return self._tokens
