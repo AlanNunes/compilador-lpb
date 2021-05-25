@@ -17,5 +17,5 @@ inteiro = 'v_inteiro'
 flutuante = 'v_flutuante'
 # Representa que o valor do token é um texto
 texto = 'v_texto'
-# Representa um valor númerico
-numero = 'v_numérico'
+
+todos = [inteiro, flutuante, texto]

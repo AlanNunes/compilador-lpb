@@ -29,7 +29,7 @@ class Lexer:
 
     # Retorna o caracter atual a ser lido.
     def __retornaCaracterAtual(self, i = 0):
-        if self._indiceAtual < len(self._texto):
+        if self._indiceAtual + i < len(self._texto):
             return  self._texto[self._indiceAtual + i]
         else:
             return None
@@ -122,22 +122,25 @@ class Lexer:
 
     # Retorna um token do tipo aritimético
     def __retornaOperadorAritmetico(self) -> Token:
-        operador = ''
+        operador = self.__retornaCaracterAtual()
         pos = self.__retornaPosicaoAtual()
-        while not self.__EOF() and self.__retornaCaracterAtual() in op_arit.todos:
-            operador += self.__retornaCaracterAtual()
-            self.__avancaColuna()
         if operador == '+':
+            self.__avancaColuna()
             return Token(op_arit.soma, pos)
         elif operador == '/':
+            self.__avancaColuna()
             return Token(op_arit.div, pos)
         elif operador == '*':
+            self.__avancaColuna()
             return Token(op_arit.mult, pos)
         elif operador == '=':
+            self.__avancaColuna()
             return Token(op_arit.op_atribuicao, pos)
         elif operador == '(':
+            self.__avancaColuna()
             return Token(op_arit.parent_esq, pos)
         elif operador == ')':
+            self.__avancaColuna()
             return Token(op_arit.parent_dir, pos)
 
     # Realiza o 'tokenize' e retorna uma lista de tokens
@@ -157,7 +160,7 @@ class Lexer:
             elif caracter_atual == "\"":
                 tkn_texto = self.__retornaTexto()
                 self.__adicionaToken(tkn_texto)
-            elif caracter_atual in op_rel.todos or caracter_atual + caracter_posterior in op_rel.todos:
+            elif caracter_atual in op_rel.todos or (caracter_posterior != None and caracter_atual + caracter_posterior in op_rel.todos):
                 tkn_op_rel = self.__retornaOperadorRelacional()
                 self.__adicionaToken(tkn_op_rel)
             elif caracter_atual in op_arit.todos:
@@ -167,6 +170,7 @@ class Lexer:
                 pos = self.__retornaPosicaoAtual()
                 tkn_ponto = Token(tipos_tokens.ponto, pos)
                 self.__adicionaToken(tkn_ponto)
+                self.__avancaColuna()
             else:
                 self.__avancaColuna()
         return self._tokens

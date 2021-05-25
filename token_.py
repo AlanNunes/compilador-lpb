@@ -16,3 +16,12 @@ class Token:
 
     def __str__(self) -> str:
         return f"(tipo: {self._tipo}, valor: {self._val}, posição: {self._pos})"
+
+    def retornaTipo(self):
+        return self._tipo
+
+    def retornaValor(self):
+        return self._val
+
+    def retornaPosicao(self):
+        return self._pos

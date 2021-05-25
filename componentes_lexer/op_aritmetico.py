@@ -1,5 +1,7 @@
 # Representa o sinal de soma
 soma = '+'
+# Representa o sinal de subtração
+sub = '-'
 # Representa o sinal de divisão
 div = '/'
 # Representa o sinal de multiplicação
