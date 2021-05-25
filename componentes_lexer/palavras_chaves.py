@@ -36,6 +36,7 @@ importa = 'importa'
 modelo = 'modelo'
 
 todas = [tipo_inteiro, tipo_flutuante, tipo_texto, se, entao, senao, fim_se, repita, fim_repita, funcao, fim_funcao, retorna, escreva, leia, importa, modelo]
+todos_tipos_decl_var = [tipo_inteiro, tipo_flutuante, tipo_texto]
 
 # Retorna a palavra chave de acordo com o nome dela
 def retornaPalavraChave(valor):

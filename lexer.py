@@ -136,6 +136,9 @@ class Lexer:
         elif operador == '=':
             self.__avancaColuna()
             return Token(op_arit.op_atribuicao, pos)
+        elif operador == '^':
+            self.__avancaColuna()
+            return Token(op_arit.pot, pos)
         elif operador == '(':
             self.__avancaColuna()
             return Token(op_arit.parent_esq, pos)
@@ -173,4 +176,5 @@ class Lexer:
                 self.__avancaColuna()
             else:
                 self.__avancaColuna()
+        self.__adicionaToken(Token(tipos_tokens.EOF, self.__retornaPosicaoAtual()))
         return self._tokens

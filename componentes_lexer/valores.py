@@ -1,7 +1,7 @@
 import string
 
 # Representa os caracteres aceitos durante no lexer
-caracteres = string.ascii_letters + 'ãâáàéèêíìîçõóòôúùûÃÂÁÀÉÈÊÍÌÎÇÕÓÒÔÚÙÛ'
+caracteres = string.ascii_letters + 'ãâáàéèêíìîçõóòôúùûÃÂÁÀÉÈÊÍÌÎÇÕÓÒÔÚÙÛ_'
 # Representa os dígitos aceitos durante no lexer
 digitos = string.digits
 # Lista de operadores relacionais aceitos no lexer
