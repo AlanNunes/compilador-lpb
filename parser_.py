@@ -1,3 +1,5 @@
+from componentes_parser.erros.identificador_ja_declarado import ErroIdentJaDefinidoNoEscopo
+from tabela_simbolos import TabelaDeSimbolos
 from componentes_parser.repita_ate import RepitaAte
 from componentes_parser.repita_id_ate import RepitaIdentAte
 from componentes_parser.repita_com_cond import RepitaComCond
@@ -28,6 +30,7 @@ class Parser:
         self._tokens = tokens
         self._ind_tkn = 0
         self._erros = []
+        self._tabela_simbolos = TabelaDeSimbolos(escopo="LPB")
 
     def parse(self) -> No:
         instrucoes = Instrucao()
@@ -55,6 +58,12 @@ class Parser:
 
     def retornaErros(self) -> List[Erro]:
         return self._erros
+
+    def __retornaTabelaSimboloAtual(self):
+        return self._tabela_simbolos
+
+    def __trocaTabelaSimbolos(self, tabela:TabelaDeSimbolos):
+        self._tabela_simbolos = tabela
 
     def __parseFator(self):
         tkn_atual = self.__retornaTokenAtual()
@@ -102,12 +111,20 @@ class Parser:
     def __parseDeclaracaoVariavel(self):
         tkn_tipo_var = self.__retornaTokenAtual()
         self.__avancaToken()
+        pos = self.__retornaTokenAtual().retornaPosicao()
         ident_var = self.__retornaTokenAtual()
         self.__avancaToken()
         # TODO: lançar exceção se não tiver o token de atribuição '='
         self.__avancaToken()
         valor = self.__parseExpr()
-        return DeclaracaoVariavel(tipo=tkn_tipo_var, ident=ident_var, val=valor)
+        no_declaracao_var = DeclaracaoVariavel(tipo=tkn_tipo_var, ident=ident_var, val=valor)
+        tabela_simb = self.__retornaTabelaSimboloAtual()
+        if tabela_simb.retornaRegistro(ident_var.retornaValor()) != None:
+            msgErro = f"O identificador '{ident_var.retornaValor()}' já foi definido neste escopo ou no escopo pai"
+            self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=pos))
+        else:
+            tabela_simb.insereRegistro(tipo=tkn_tipo_var.retornaTipo(), ident=ident_var.retornaValor())
+        return no_declaracao_var
 
     def __parseAtribuicaoVariavel(self):
         ident_var = self.__retornaTokenAtual()
@@ -116,7 +133,13 @@ class Parser:
         # TODO: lançar exceção se não tiver o token de atribuição '='
         self.__avancaToken()
         valor = self.__parseExpr()
-        return AtribuicaoVariavel(ident=ident_var, op=op, val=valor)
+        no_atrib_var = AtribuicaoVariavel(ident=ident_var, op=op, val=valor)
+        tabela_simb = self.__retornaTabelaSimboloAtual()
+        if not tabela_simb.verificaRegistroExisteTabelaAtual(ident_var.retornaValor()):
+            msgErro = f"O identificador '{ident_var.retornaValor()}' não foi encontrado neste escopo."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=posErro))
+        return no_atrib_var
 
     def __parseFuncao(self):
         pass
@@ -132,15 +155,22 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
             self.__avancaToken()
+        tabela_simb_pai = self.__retornaTabelaSimboloAtual()
+        tabela_simb_se = TabelaDeSimbolos(pai=tabela_simb_pai)
+        self.__trocaTabelaSimbolos(tabela_simb_se)
         instrucoes = []
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
             instrucoes.append(self.__parseInstrucao())
+        self.__trocaTabelaSimbolos(tabela_simb_pai)
         senaose = None
         senao = None
         if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
             senaose = self.__parseSenaoSe()
         elif self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
+            tabela_simb_senao = TabelaDeSimbolos(pai=tabela_simb_pai)
+            self.__trocaTabelaSimbolos(tabela_simb_senao)
             senao = self.__parseInstrucao()
+            self.__trocaTabelaSimbolos(tabela_simb_pai)
         return SenaoSe(cond=cond, corpo=instrucoes, senaose=senaose, senao=senao)
         
 
@@ -151,19 +181,26 @@ class Parser:
         if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.entao:
             self.__avancaToken()
         else:
-            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'"
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
             self.__avancaToken()
+        tabela_simb_pai = self.__retornaTabelaSimboloAtual()
+        tabela_simb_se = TabelaDeSimbolos(pai=tabela_simb_pai)
+        self.__trocaTabelaSimbolos(tabela_simb_se)
         instrucoes = []
-        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se, tipos_tokens.EOF]:
             instrucoes.append(self.__parseInstrucao())
+        self.__trocaTabelaSimbolos(tabela_simb_pai)
         senaose = None
         senao = None
         if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
             senaose = self.__parseSenaoSe()
         elif self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
+            tabela_simb_senao = TabelaDeSimbolos(pai=tabela_simb_pai)
+            self.__trocaTabelaSimbolos(tabela_simb_senao)
             senao = self.__parseInstrucao()
+            self.__trocaTabelaSimbolos(tabela_simb_pai)
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_se:
             msgErro = f"Espera-se '{palavras_chaves.fim_se}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
@@ -241,6 +278,9 @@ class Parser:
         return RepitaComCond(decl_var=decl_var, cond=cond, atrib_var=atrib_var, instrucoes=instrucoes)
 
     def __parseRepita(self):
+        tabela_simb_pai = self.__retornaTabelaSimboloAtual()
+        tabela_simb_repita = TabelaDeSimbolos(pai=tabela_simb_pai)
+        self.__trocaTabelaSimbolos(tabela_simb_repita)
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.repita:
             msgErro = f"Espera-se '{palavras_chaves.repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
@@ -259,6 +299,7 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
             self.__avancaToken()
+        self.__trocaTabelaSimbolos(tabela_simb_repita)
 
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
@@ -274,6 +315,5 @@ class Parser:
             return self.__parseRepita()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
-        else:
-            self.__avancaToken()
-            return None
+        self.__avancaToken()
+        return None
