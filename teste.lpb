@@ -1,8 +1,3 @@
-se 10 <= 25 então 
-    inteiro var = 10
-senão se 50 < 100 então
-    flutuante cachaca = 20
-    se 7 >= 7 então
-        inteiro valor = 7
-    fimse
+repita x até 10 então
+    inteiro x = 10
 fimse

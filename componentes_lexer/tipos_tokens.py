@@ -7,3 +7,5 @@ ponto = 'ponto'
 EOF = 'EOF'
 # Representa um comentário
 comentario = '//'
+# Representa um delimitador ';'
+delimitador = ';'

@@ -10,6 +10,8 @@ senaose = 'senãose'
 fim_se = 'fimse'
 # Representa a palavra-chave 'repita'
 repita = 'repita'
+# Representa a palavra-chave 'até' do repita
+ate = 'até'
 # Representa a palavra-chave 'fimrepita'
 fim_repita = 'fimrepita'
 # Representa a palavra-chave 'func'
@@ -37,7 +39,7 @@ importa = 'importa'
 # Representa um modelo(classe)
 modelo = 'modelo'
 
-todas = [tipo_inteiro, tipo_flutuante, tipo_texto, se, entao, senaose, senao, fim_se, repita, fim_repita, funcao, fim_funcao, retorna, escreva, leia, importa, modelo]
+todas = [tipo_inteiro, tipo_flutuante, tipo_texto, se, entao, senaose, senao, fim_se, repita, fim_repita, funcao, fim_funcao, retorna, escreva, leia, importa, modelo, ate]
 todos_tipos_decl_var = [tipo_inteiro, tipo_flutuante, tipo_texto]
 
 # Retorna a palavra chave de acordo com o nome dela

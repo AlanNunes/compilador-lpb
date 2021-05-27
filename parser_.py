@@ -1,3 +1,6 @@
+from componentes_parser.repita_ate import RepitaAte
+from componentes_parser.repita_id_ate import RepitaIdentAte
+from componentes_parser.repita_com_cond import RepitaComCond
 from componentes_parser.senaose import SenaoSe
 from typing import List
 from componentes_parser.no import No
@@ -88,7 +91,7 @@ class Parser:
     def __parseExpr(self):
         fat_esq = self.__parseTermo()
         tkn_atual = self.__retornaTokenAtual()
-        while tkn_atual.retornaTipo() in [op_arit.sub, op_arit.soma]:
+        while tkn_atual.retornaTipo() in [op_arit.sub, op_arit.soma, op_rel.igualdade]:
             tkn_op = self.__retornaTokenAtual()
             self.__avancaToken()
             fat_dir = self.__parseTermo()
@@ -168,6 +171,95 @@ class Parser:
         self.__avancaToken()
         return Se(cond=cond, corpo=instrucoes, senaose=senaose, senao=senao)
 
+    def __parseRepitaAte(self):
+        expr = self.__parseExpr()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.entao:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        instrucoes = []
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
+            instrucoes.append(self.__parseInstrucao())
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
+            msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        return RepitaAte(expr=expr, instrucoes=instrucoes)
+
+    def __parseRepitaIdentAte(self):
+        ident = Variavel(self.__retornaTokenAtual())
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.ate:
+            msgErro = f"Espera-se '{palavras_chaves.ate}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        expr = self.__parseExpr()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.entao:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        instrucoes = []
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
+            instrucoes.append(self.__parseInstrucao())
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
+            msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        return RepitaIdentAte(ident=ident, expr=expr, instrucoes=instrucoes)
+
+    def __parseRepitaComCond(self):
+        decl_var = self.__parseDeclaracaoVariavel()
+        if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.delimitador:
+            msgErro = f"Espera-se '{tipos_tokens.delimitador}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+            self.__avancaToken()
+        self.__avancaToken()
+        cond = self.__parseExpr()
+        if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.delimitador:
+            msgErro = f"Espera-se '{tipos_tokens.delimitador}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+            self.__avancaToken()
+        self.__avancaToken()
+        atrib_var = self.__parseAtribuicaoVariavel()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.entao:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        instrucoes = []
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
+            instrucoes.append(self.__parseInstrucao())
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
+            msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        return RepitaComCond(decl_var=decl_var, cond=cond, atrib_var=atrib_var, instrucoes=instrucoes)
+
+    def __parseRepita(self):
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.repita:
+            msgErro = f"Espera-se '{palavras_chaves.repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        token_atual = self.__retornaTokenAtual()
+        if token_atual.retornaTipo() == palavras_chaves.ate:
+            self.__avancaToken()
+            return self.__parseRepitaAte()
+        elif token_atual.retornaTipo() == tipos_tokens.identificador:
+            return self.__parseRepitaIdentAte()
+        elif token_atual.retornaTipo() in [palavras_chaves.tipo_flutuante, palavras_chaves.tipo_inteiro]:
+            return self.__parseRepitaComCond()
+        else:
+            msgErro = f"Espera-se '{palavras_chaves.tipo_inteiro} ou {palavras_chaves.tipo_flutuante}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+            self.__avancaToken()
+
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
         if tkn_atual.retornaTipo() in palavras_chaves.todos_tipos_decl_var:
@@ -178,6 +270,8 @@ class Parser:
                 return self.__parseAtribuicaoVariavel()
         elif tkn_atual.retornaTipo() == palavras_chaves.se:
             return self.__parseSe()
+        elif tkn_atual.retornaTipo() == palavras_chaves.repita:
+            return self.__parseRepita()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
         else:

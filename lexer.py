@@ -223,6 +223,11 @@ class Lexer:
                 tkn_ponto = Token(tipos_tokens.ponto, pos)
                 self.__adicionaToken(tkn_ponto)
                 self.__avancaColuna()
+            elif caracter_atual == ';':
+                pos = self.__retornaPosicaoAtual()
+                tkn_delimitador = Token(tipos_tokens.delimitador, pos)
+                self.__adicionaToken(tkn_delimitador)
+                self.__avancaColuna()
             else:
                 self.__avancaColuna()
         self.__adicionaToken(Token(tipos_tokens.EOF, self.__retornaPosicaoAtual()))
