@@ -7,3 +7,12 @@ class OpBin(No):
         self._esq = esq
         self._op = op
         self._dir = dir
+
+    def retornaEsq(self) -> No:
+        return self._esq
+
+    def retornaDir(self) -> No:
+        return self._dir
+
+    def retornaOp(self) -> Token:
+        return self._op

@@ -9,3 +9,6 @@ class Instrucao(No):
 
     def adicionaInstrucao(self, inst):
         self._instrucoes.append(inst)
+
+    def retornaInstrucoes(self):
+        return self._instrucoes

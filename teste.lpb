@@ -1,4 +1,1 @@
 inteiro valor = 10
-se valor == 100 então
-    inteiro valor = 20
-fimse
