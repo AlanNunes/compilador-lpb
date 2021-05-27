@@ -1,3 +1,4 @@
+from os import error
 from lexer import Lexer
 from parser_ import Parser
 
@@ -7,4 +8,6 @@ lexer = Lexer(conteudo)
 tokens = lexer.retornaTokens()
 parser = Parser(tokens)
 ast = parser.parse()
-print(ast)
+erros = parser.retornaErros()
+for e in erros:
+    print(e.retornaErro())

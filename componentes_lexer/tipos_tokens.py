@@ -5,3 +5,5 @@ identificador = 'identificador'
 ponto = 'ponto'
 # Representa fim arquivo
 EOF = 'EOF'
+# Representa um comentário
+comentario = '//'

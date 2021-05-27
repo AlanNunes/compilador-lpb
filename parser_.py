@@ -1,3 +1,9 @@
+from componentes_parser.senaose import SenaoSe
+from typing import List
+from componentes_parser.no import No
+from componentes_parser.erros.sintaxe_erro import ErroSintaxe
+from componentes_parser.erros.erro import Erro
+from componentes_parser.se import Se
 from componentes_parser.variavel import Variavel
 from componentes_parser.atribuicao_variavel import AtribuicaoVariavel
 from componentes_parser.declaracao_variavel import DeclaracaoVariavel
@@ -18,8 +24,9 @@ class Parser:
     def __init__(self, tokens):
         self._tokens = tokens
         self._ind_tkn = 0
+        self._erros = []
 
-    def parse(self):
+    def parse(self) -> No:
         instrucoes = Instrucao()
         tkn_atual = self.__retornaTokenAtual()
         while tkn_atual.retornaTipo() != tipos_tokens.EOF:
@@ -39,6 +46,12 @@ class Parser:
             return self._tokens[self._ind_tkn + i]
         else:
             return None
+
+    def __registraErro(self, erro: Erro):
+        self._erros.append(erro)
+
+    def retornaErros(self) -> List[Erro]:
+        return self._erros
 
     def __parseFator(self):
         tkn_atual = self.__retornaTokenAtual()
@@ -63,7 +76,8 @@ class Parser:
     def __parseTermo(self):
         fat_esq = self.__parseFator()
         tkn_atual = self.__retornaTokenAtual()
-        while tkn_atual.retornaTipo() in [op_arit.mult, op_arit.div, op_arit.pot]:
+        operadores = [op_arit.mult, op_arit.div, op_arit.pot, op_rel.maior_que, op_rel.menor_que, op_rel.maior_igual, op_rel.menor_igual]
+        while tkn_atual.retornaTipo() in operadores:
             tkn_op = self.__retornaTokenAtual()
             self.__avancaToken()
             fat_dir = self.__parseFator()
@@ -104,6 +118,56 @@ class Parser:
     def __parseFuncao(self):
         pass
 
+    def __parseSenaoSe(self) -> Se:
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
+            self.__avancaToken()
+        cond = self.__parseExpr()
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.entao:
+            self.__avancaToken()
+        else:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+            self.__avancaToken()
+        instrucoes = []
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
+            instrucoes.append(self.__parseInstrucao())
+        senaose = None
+        senao = None
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
+            senaose = self.__parseSenaoSe()
+        elif self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
+            senao = self.__parseInstrucao()
+        return SenaoSe(cond=cond, corpo=instrucoes, senaose=senaose, senao=senao)
+        
+
+    def __parseSe(self) -> Se:
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.se:
+            self.__avancaToken()
+        cond = self.__parseExpr()
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.entao:
+            self.__avancaToken()
+        else:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+            self.__avancaToken()
+        instrucoes = []
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
+            instrucoes.append(self.__parseInstrucao())
+        senaose = None
+        senao = None
+        if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
+            senaose = self.__parseSenaoSe()
+        elif self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
+            senao = self.__parseInstrucao()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_se:
+            msgErro = f"Espera-se '{palavras_chaves.fim_se}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        return Se(cond=cond, corpo=instrucoes, senaose=senaose, senao=senao)
+
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
         if tkn_atual.retornaTipo() in palavras_chaves.todos_tipos_decl_var:
@@ -112,5 +176,10 @@ class Parser:
             prox_tkn = self.__retornaTokenAtual(1)
             if prox_tkn.retornaTipo() == op_arit.op_atribuicao:
                 return self.__parseAtribuicaoVariavel()
-        elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq]:
+        elif tkn_atual.retornaTipo() == palavras_chaves.se:
+            return self.__parseSe()
+        elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
+        else:
+            self.__avancaToken()
+            return None

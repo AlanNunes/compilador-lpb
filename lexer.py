@@ -40,23 +40,53 @@ class Lexer:
         return Posicao(self._linha, self._coluna)
 
     # Avança um caracter (ou coluna).
-    def __avancaColuna(self):
+    # Retorna a quantidade de colunas avançadas
+    #  e retorna -1 caso tenha pulado alguma linha.
+    def __avancaColuna(self) -> int:
+        pulou_linha = False
         c_atual = self.__retornaCaracterAtual() 
         # Se encontrar uma quebra de linha, avança uma linha.
         if c_atual == '\n':
             self.__avancaLinha()
+            pulou_linha = True
         if len(self._texto) > self._indiceAtual:
             self._indiceAtual += 1
             self._coluna += 1
+        return -1 if pulou_linha else 1 
 
     # Pula para a próxima linha do código fonte.
     def __avancaLinha(self):
         self._coluna = 0
         self._linha += 1
 
+    def __desfazAvancoColunaLinha(self, coluna:int, linha:int):
+        self._coluna -= coluna
+        self._linha -= linha
+
     # Retorna verdadeiro se já tiver lido todo código fonte.
     def __EOF(self) -> bool:
         return self.__retornaCaracterAtual() == None
+
+    # Tenta formar o token 'senão se' e desfaz
+    #  alterações caso não consiga.
+    def __tentaFormarSenaoSe(self, valor):
+        c_percorridas = 0
+        l_percorridas = 0
+        palavra = ''
+        pos = self.__retornaPosicaoAtual()
+        while not self.__EOF() and self.__retornaCaracterAtual() in palavras_chaves.se:
+            palavra += self.__retornaCaracterAtual()
+            res = self.__avancaColuna()
+            if res == -1:
+                l_percorridas += 1
+            else:
+                c_percorridas += res
+        if palavra == palavras_chaves.se:
+            return Token(palavras_chaves.senaose, pos)
+        else:
+            # Faz rollback
+            self.__desfazAvancoColunaLinha(c_percorridas, l_percorridas)
+            return None
 
     # Retorna um identificador.
     # Exemplo: o nome de uma variável.
@@ -66,6 +96,11 @@ class Lexer:
         while not self.__EOF() and self.__retornaCaracterAtual() in valores.caracteres:
             valor += self.__retornaCaracterAtual()
             self.__avancaColuna()
+        if valor == palavras_chaves.senao and not self.__EOF() and self.__retornaCaracterAtual() == ' ':
+            self.__avancaColuna()
+            token_senaose = self.__tentaFormarSenaoSe(valor)
+            if token_senaose != None:
+                return token_senaose
         if valor in palavras_chaves.todas:
             p_chave = palavras_chaves.retornaPalavraChave(valor)
             return Token(p_chave, pos)
@@ -108,16 +143,22 @@ class Lexer:
             operador = operador + self.__retornaCaracterAtual()
             self.__avancaColuna()
         if operador == '>':
+            self.__avancaColuna()
             return Token(op_rel.maior_que, pos)
         elif operador == '<':
+            self.__avancaColuna()
             return Token(op_rel.menor_que, pos)
         elif operador == '>=':
+            self.__avancaColuna()
             return Token(op_rel.maior_igual, pos)
         elif operador == '<=':
+            self.__avancaColuna()
             return Token(op_rel.menor_igual, pos)
         elif operador == '==':
+            self.__avancaColuna()
             return Token(op_rel.igualdade, pos)
         elif operador == '!=':
+            self.__avancaColuna()
             return Token(op_rel.desigualdade, pos)
 
     # Retorna um token do tipo aritimético
@@ -146,6 +187,12 @@ class Lexer:
             self.__avancaColuna()
             return Token(op_arit.parent_dir, pos)
 
+    def __ignoraComentario(self):
+        c_atual = self.__retornaCaracterAtual()
+        while c_atual != '\n' and not self.__EOF():
+            self.__avancaColuna()
+            c_atual = self.__retornaCaracterAtual()
+
     # Realiza o 'tokenize' e retorna uma lista de tokens
     #  gerados através do código fonte em lpb.
     def retornaTokens(self) -> list:
@@ -163,6 +210,8 @@ class Lexer:
             elif caracter_atual == "\"":
                 tkn_texto = self.__retornaTexto()
                 self.__adicionaToken(tkn_texto)
+            elif caracter_posterior != None and caracter_atual + caracter_posterior == tipos_tokens.comentario:
+                self.__ignoraComentario()
             elif caracter_atual in op_rel.todos or (caracter_posterior != None and caracter_atual + caracter_posterior in op_rel.todos):
                 tkn_op_rel = self.__retornaOperadorRelacional()
                 self.__adicionaToken(tkn_op_rel)
