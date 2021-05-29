@@ -228,6 +228,11 @@ class Lexer:
                 tkn_delimitador = Token(tipos_tokens.delimitador, pos)
                 self.__adicionaToken(tkn_delimitador)
                 self.__avancaColuna()
+            elif caracter_atual == ',':
+                pos = self.__retornaPosicaoAtual()
+                tkn_virgula = Token(tipos_tokens.virgula, pos)
+                self.__adicionaToken(tkn_virgula)
+                self.__avancaColuna()
             else:
                 self.__avancaColuna()
         self.__adicionaToken(Token(tipos_tokens.EOF, self.__retornaPosicaoAtual()))

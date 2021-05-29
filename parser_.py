@@ -1,3 +1,6 @@
+from componentes_parser.retorna import Retorna
+from componentes_parser.parametro import Parametro
+from componentes_parser.funcao import Funcao
 from componentes_parser.erros.identificador_ja_declarado import ErroIdentJaDefinidoNoEscopo
 from tabela_simbolos import TabelaDeSimbolos
 from componentes_parser.repita_ate import RepitaAte
@@ -145,9 +148,6 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=posErro))
         return no_atrib_var
-
-    def __parseFuncao(self):
-        pass
 
     def __parseSenao(self) -> List[Instrucao]:
         if not self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
@@ -329,6 +329,75 @@ class Parser:
             self.__avancaToken()
         self.__trocaTabelaSimbolos(tabela_simb_repita)
 
+    def __parseRetorna(self) -> Retorna:
+        self.__avancaToken()
+        expr = self.__parseExpr()
+        return Retorna(expr)
+
+    def __parseParametro(self):
+        tipo = self.__retornaTokenAtual()
+        if tipo.retornaTipo() not in palavras_chaves.todos_tipos_funcao:
+            msgErro = f"Espera-se '{palavras_chaves.todos_tipos_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        ident = self.__retornaTokenAtual()
+        if ident.retornaTipo() != tipos_tokens.identificador:
+            msgErro = f"Espera-se '{tipos_tokens.identificador}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        valor = None
+        if self.__retornaTokenAtual().retornaTipo() == op_arit.op_atribuicao:
+            self.__avancaToken()
+            valor = self.__parseExpr()
+        return Parametro(tipo=tipo, ident=ident, val=valor)
+
+    def __parseParametrosFuncao(self):
+        parametros = []
+        while self.__retornaTokenAtual().retornaTipo() not in [op_arit.parent_dir, tipos_tokens.EOF]:
+            parametros.append(self.__parseParametro())
+            if self.__retornaTokenAtual().retornaTipo() == op_arit.parent_dir:
+                break
+            if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.virgula:
+                msgErro = f"Espera-se '{tipos_tokens.virgula}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+                self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+            self.__avancaToken()
+        return parametros
+
+    def __parseFuncao(self):
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() not in palavras_chaves.todos_tipos_funcao:
+            msgErro = f"Espera-se '{palavras_chaves.todos_tipos_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        tipo = self.__retornaTokenAtual()
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.identificador:
+            msgErro = f"Espera-se '{tipos_tokens.identificador}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        ident = self.__retornaTokenAtual()
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_esq:
+            msgErro = f"Espera-se '{op_arit.parent_esq}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        parametros = self.__parseParametrosFuncao()
+        if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_dir:
+            msgErro = f"Espera-se '{op_arit.parent_dir}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.entao:
+            msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        instrucoes = Instrucao()
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_funcao, tipos_tokens.EOF]:
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
+        if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_funcao:
+            msgErro = f"Espera-se '{palavras_chaves.fim_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        return Funcao(ident=ident, params=parametros, instrucao=instrucoes)
+
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
         if tkn_atual.retornaTipo() in palavras_chaves.todos_tipos_decl_var:
@@ -343,6 +412,10 @@ class Parser:
             return self.__parseSenao()
         elif tkn_atual.retornaTipo() == palavras_chaves.repita:
             return self.__parseRepita()
+        elif tkn_atual.retornaTipo() == palavras_chaves.funcao:
+            return self.__parseFuncao()
+        elif tkn_atual.retornaTipo() == palavras_chaves.retorna:
+            return self.__parseRetorna()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
         self.__avancaToken()

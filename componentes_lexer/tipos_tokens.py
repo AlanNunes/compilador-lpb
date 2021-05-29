@@ -9,3 +9,5 @@ EOF = 'EOF'
 comentario = '//'
 # Representa um delimitador ';'
 delimitador = ';'
+
+virgula = ','
