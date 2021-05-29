@@ -19,4 +19,7 @@ else:
     print('... Gerando código em Python')
     gerador_python = GeradorDeCodigoParaPython()
     res = gerador_python.gera_instrucoes(ast)
+    f = open("output.py", "w")
+    f.write(res)
+    f.close()
     print(res)

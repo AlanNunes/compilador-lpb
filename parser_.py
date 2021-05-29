@@ -112,9 +112,14 @@ class Parser:
         tkn_tipo_var = self.__retornaTokenAtual()
         self.__avancaToken()
         pos = self.__retornaTokenAtual().retornaPosicao()
+        if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.identificador:
+            msgErro = f"Espera-se '{tipos_tokens.identificador}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=pos))
         ident_var = self.__retornaTokenAtual()
         self.__avancaToken()
-        # TODO: lançar exceção se não tiver o token de atribuição '='
+        if self.__retornaTokenAtual().retornaTipo() != op_arit.op_atribuicao:
+            msgErro = f"Espera-se '{op_arit.op_atribuicao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=pos))
         self.__avancaToken()
         valor = self.__parseExpr()
         no_declaracao_var = DeclaracaoVariavel(tipo=tkn_tipo_var, ident=ident_var, val=valor)
@@ -135,7 +140,7 @@ class Parser:
         valor = self.__parseExpr()
         no_atrib_var = AtribuicaoVariavel(ident=ident_var, op=op, val=valor)
         tabela_simb = self.__retornaTabelaSimboloAtual()
-        if not tabela_simb.verificaRegistroExisteTabelaAtual(ident_var.retornaValor()):
+        if not tabela_simb.retornaRegistro(ident_var.retornaValor()):
             msgErro = f"O identificador '{ident_var.retornaValor()}' não foi encontrado neste escopo."
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=posErro))
@@ -143,6 +148,21 @@ class Parser:
 
     def __parseFuncao(self):
         pass
+
+    def __parseSenao(self) -> List[Instrucao]:
+        if not self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senao:
+            msgErro = f"Espera-se '{palavras_chaves.senao}' ao invés de '{self.__retornaTokenAtual().retornaTipo()}'."
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
+        tabela_simb_pai = self.__retornaTabelaSimboloAtual()
+        tabela_simb_se = TabelaDeSimbolos(pai=tabela_simb_pai)
+        self.__trocaTabelaSimbolos(tabela_simb_se)
+        instrucoes = Instrucao()
+        while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
+        self.__trocaTabelaSimbolos(tabela_simb_pai)
+        return instrucoes
 
     def __parseSenaoSe(self) -> Se:
         if self.__retornaTokenAtual().retornaTipo() == palavras_chaves.senaose:
@@ -158,9 +178,9 @@ class Parser:
         tabela_simb_pai = self.__retornaTabelaSimboloAtual()
         tabela_simb_se = TabelaDeSimbolos(pai=tabela_simb_pai)
         self.__trocaTabelaSimbolos(tabela_simb_se)
-        instrucoes = []
+        instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se]:
-            instrucoes.append(self.__parseInstrucao())
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
         self.__trocaTabelaSimbolos(tabela_simb_pai)
         senaose = None
         senao = None
@@ -188,9 +208,10 @@ class Parser:
         tabela_simb_pai = self.__retornaTabelaSimboloAtual()
         tabela_simb_se = TabelaDeSimbolos(pai=tabela_simb_pai)
         self.__trocaTabelaSimbolos(tabela_simb_se)
-        instrucoes = []
+        instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.senao, palavras_chaves.senaose, palavras_chaves.fim_se, tipos_tokens.EOF]:
-            instrucoes.append(self.__parseInstrucao())
+            inst = self.__parseInstrucao()
+            instrucoes.adicionaInstrucao(inst)
         self.__trocaTabelaSimbolos(tabela_simb_pai)
         senaose = None
         senao = None
@@ -311,6 +332,8 @@ class Parser:
                 return self.__parseAtribuicaoVariavel()
         elif tkn_atual.retornaTipo() == palavras_chaves.se:
             return self.__parseSe()
+        elif tkn_atual.retornaTipo() == palavras_chaves.senao:
+            return self.__parseSenao()
         elif tkn_atual.retornaTipo() == palavras_chaves.repita:
             return self.__parseRepita()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:

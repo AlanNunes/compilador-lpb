@@ -5,3 +5,9 @@ from componentes_parser.op_bin import OpBin
 class AtribuicaoVariavel(OpBin):
     def __init__(self, ident: No, op: Token, val: No):
         super().__init__(ident, op, val)
+
+    def retornaIdentificador(self) -> Token:
+        return self.retornaEsq()
+
+    def retornaValor(self) -> Token:
+        return self.retornaDir()
