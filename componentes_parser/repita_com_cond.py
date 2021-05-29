@@ -12,7 +12,7 @@ class RepitaComCond(Repita):
         self._atrib_var = atrib_var
         self._instrucoes = instrucoes
 
-    def retornaVar(self) -> No:
+    def retornaDeclVar(self) -> No:
         return self._decl_var
     
     def retornaCond(self) -> No:

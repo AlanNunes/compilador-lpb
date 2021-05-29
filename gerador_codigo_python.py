@@ -1,3 +1,7 @@
+from componentes_parser.repita_com_cond import RepitaComCond
+from componentes_parser.repita_id_ate import RepitaIdentAte
+from componentes_parser.repita_ate import RepitaAte
+from componentes_parser.repita import Repita
 from componentes_parser.atribuicao_variavel import AtribuicaoVariavel
 from typing import List
 from componentes_parser.no import No
@@ -21,7 +25,7 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
         # Representa a quantidade de Tabs (\t)
         self._identacao_atual = 0
 
-    def __aumentaIdentacao(self):
+    def __avancaIdentacao(self):
         self._identacao_atual += 1
 
     def __recuaIdentacao(self):
@@ -48,11 +52,50 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
             return self.gera_atr_var(no)
         elif isinstance(no, Se):
             return self.gera_se(no)
+        elif isinstance(no, Repita):
+            return self.gera_repita(no)
+
+    def gera_repita(self, no: Repita):
+        if isinstance(no, RepitaAte):
+            return self.gera_repita_ate(no)
+        elif isinstance(no, RepitaIdentAte):
+            return self.gera_repita_ident_ate(no)
+        elif isinstance(no, RepitaComCond):
+            return self.gera_repita_com_cond(no)
+
+    def gera_repita_ate(self, no: RepitaAte):
+        identacao = self.__retornaIdentacaoAtual()
+        expr = self.gera_expr(no.retornaExpr(), '')
+        self.__avancaIdentacao()
+        instrucoes = self.gera_instrucoes(no.retornaInstrucoes())
+        self.__recuaIdentacao()
+        return f"{identacao}for i in range({expr}):\n{instrucoes}"
+
+    def gera_repita_ident_ate(self, no: RepitaIdentAte):
+        identacao = self.__retornaIdentacaoAtual()
+        ident = self.gera_expr(no.retornaIdentificador(), '')
+        expr = self.gera_expr(no.retornaExpr(), '')
+        self.__avancaIdentacao()
+        instrucoes = self.gera_instrucoes(no.retornaInstrucoes())
+        self.__recuaIdentacao()
+        return f"{identacao}for {ident} in range({expr}):\n{instrucoes}"
+
+    def gera_repita_com_cond(self, no: RepitaComCond):
+        identacao = self.__retornaIdentacaoAtual()
+        decl_var = self.gera_decl_var(no.retornaDeclVar())
+        cond = self.gera_expr(no.retornaCond(), '')
+        # atr_var = self.gera_atr_var(no.retornaAtrVar())
+        self.__avancaIdentacao()
+        instrucoes = self.gera_instrucoes(no.retornaInstrucoes())
+        self.__recuaIdentacao()
+        res = f'{identacao}{decl_var}\n'
+        res += f'{identacao}while {cond}:\n{instrucoes}'
+        return res
 
     def gera_se(self, no:Se):
         identacao = self.__retornaIdentacaoAtual()
         cond = self.gera_expr(no.retornaCond(), '')
-        self.__aumentaIdentacao()
+        self.__avancaIdentacao()
         instrucoes_corpo = no.retornaCorpo()
         corpo = self.gera_instrucoes(instrucoes_corpo)
         self.__recuaIdentacao()
@@ -74,7 +117,7 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
     def gera_senaose(self, no:SenaoSe):
         identacao = self.__retornaIdentacaoAtual()
         cond = self.gera_expr(no.retornaCond(), '')
-        self.__aumentaIdentacao()
+        self.__avancaIdentacao()
         instrucoes_corpo = no.retornaCorpo()
         corpo = self.gera_instrucoes(instrucoes_corpo)
         self.__recuaIdentacao()
@@ -95,7 +138,7 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
 
     def gera_senao(self, no:Instrucao):
         identacao = self.__retornaIdentacaoAtual()
-        self.__aumentaIdentacao()
+        self.__avancaIdentacao()
         instrucoes = self.gera_instrucoes(no)
         self.__recuaIdentacao()
         return f"{identacao}else:\n{instrucoes}"

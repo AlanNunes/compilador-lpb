@@ -1,8 +1,3 @@
-inteiro chacaca = 99 + 25
-se 10 > 0 então
-    chacaca = 39  
-senão se chacaca == 26 então
-    flutuante quant = 26.5
-senão
-    inteiro teste = 23 + chacaca * chacaca
-fimse
+repita inteiro x = 10; x < 100; x = x + 1 então
+    texto roupaNova = "Lembrar vc um sonho a mais nao faz mallll"
+fimrepita

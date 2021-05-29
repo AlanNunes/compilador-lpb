@@ -236,9 +236,9 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
         self.__avancaToken()
-        instrucoes = []
+        instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
-            instrucoes.append(self.__parseInstrucao())
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
@@ -247,6 +247,11 @@ class Parser:
 
     def __parseRepitaIdentAte(self):
         ident = Variavel(self.__retornaTokenAtual())
+        # Adiciona uma instrução de atribuição no loop
+        op_soma = Token(op_arit.soma, pos=self.__retornaTokenAtual().retornaPosicao())
+        valor_soma = Numero(Token(tipo=valores.inteiro, pos=self.__retornaTokenAtual().retornaPosicao(), val=1))
+        op_bin_soma = OpBin(esq=ident, op=op_soma, dir=valor_soma)
+        var_atrib = AtribuicaoVariavel(ident=self.__retornaTokenAtual(), op=op_soma, val=op_bin_soma)
         self.__avancaToken()
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.ate:
             msgErro = f"Espera-se '{palavras_chaves.ate}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
@@ -259,9 +264,10 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
         self.__avancaToken()
-        instrucoes = []
+        instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
-            instrucoes.append(self.__parseInstrucao())
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
+        instrucoes.adicionaInstrucao(var_atrib)
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
@@ -289,9 +295,10 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
         self.__avancaToken()
-        instrucoes = []
+        instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_repita, tipos_tokens.EOF]:
-            instrucoes.append(self.__parseInstrucao())
+            instrucoes.adicionaInstrucao(self.__parseInstrucao())
+        instrucoes.adicionaInstrucao(atrib_var)
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_repita:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
