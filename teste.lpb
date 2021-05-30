@@ -1,11 +1,9 @@
-func inteiro soma(inteiro x = 0, inteiro y = 0) então
-    se (x + y) > 10 então
-        retorne 1
-    senão
-        retorne 2
+func vazio fora_bolsonaro(boleano param) então
+    se param == Verdadeiro então
+        repita até 10 então
+            escreva("FORA BOLSONARO CADE AS VACINAS")
+        fimrepita
     fimse
 fimfunc
 
-inteiro x = 100
-inteiro y = 1000
-somaa(x * x, y + y)
+fora_bolsonaro(Verdadeiro)

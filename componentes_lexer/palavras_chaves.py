@@ -27,11 +27,10 @@ tipo_inteiro = 'inteiro'
 tipo_flutuante = 'flutuante'
 # Representa a palavra-chave 'texto'
 tipo_texto = 'texto'
-
-# Representa a palavra-chave 'escreva'
-escreva = 'escreva'
-# Representa a palavra-chave 'leia'
-leia = 'leia'
+# Representa a palavra-chave 'texto'
+tipo_boleano = 'boleano'
+# Representa a palavra-chave 'vazio'
+tipo_vazio = 'vazio'
 
 # Representa a palavra-chave 'importa'
 importa = 'importa'
@@ -39,9 +38,9 @@ importa = 'importa'
 # Representa um modelo(classe)
 modelo = 'modelo'
 
-todas = [tipo_inteiro, tipo_flutuante, tipo_texto, se, entao, senaose, senao, fim_se, repita, fim_repita, funcao, fim_funcao, retorna, escreva, leia, importa, modelo, ate]
-todos_tipos_decl_var = [tipo_inteiro, tipo_flutuante, tipo_texto]
-todos_tipos_funcao = [tipo_inteiro, tipo_flutuante, tipo_texto]
+todas = [tipo_boleano, tipo_inteiro, tipo_flutuante, tipo_texto, tipo_vazio, se, entao, senaose, senao, fim_se, repita, fim_repita, funcao, fim_funcao, retorna, importa, modelo, ate]
+todos_tipos_decl_var = [tipo_inteiro, tipo_flutuante, tipo_texto, tipo_boleano]
+todos_tipos_funcao = [tipo_inteiro, tipo_flutuante, tipo_texto, tipo_boleano, tipo_vazio]
 
 # Retorna a palavra chave de acordo com o nome dela
 def retornaPalavraChave(valor):

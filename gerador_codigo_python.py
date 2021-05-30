@@ -1,3 +1,7 @@
+import componentes_lexer.valores as valores
+from componentes_parser.boleano import Boleano
+import componentes_lexer.funcoes_internas as funcoes_internas
+from componentes_parser.chamada_funcao import ChamadaFuncao
 from componentes_parser.parametro import Parametro
 from componentes_parser.retorna import Retorna
 from componentes_parser.funcao import Funcao
@@ -18,8 +22,6 @@ from componentes_parser.senaose import SenaoSe
 import componentes_lexer.op_aritmetico as op_arit
 import componentes_lexer.op_relational as op_rel
 from gerador_codigo import GeradorDeCodigo
-import componentes_lexer.valores as lexer_valores
-import componentes_lexer.palavras_chaves as lexer_palavras_chave
 from token_ import Token
 from componentes_parser.declaracao_variavel import DeclaracaoVariavel
 
@@ -61,6 +63,37 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
             return self.gera_funcao(no)
         elif isinstance(no, Retorna):
             return self.gera_retorne(no)
+        elif isinstance(no, ChamadaFuncao):
+            return self.gera_chamada_funcao(no)
+
+    def gera_chamada_interna_escreva(self, parametros: List):
+        identacao = self.__retornaIdentacaoAtual()
+        valor = ''
+        for param in parametros:
+            expr = self.gera_expr(param, '')
+            valor += f"{expr} "
+        valor = valor[:-1]
+        return f"{identacao}print({valor})"
+
+    def gera_chamada_funcao_interna(self, no: ChamadaFuncao):
+        ident = no.retornaIdentificador().retornaValor()
+        if ident == funcoes_internas.escreva:
+            return self.gera_chamada_interna_escreva(no.retornaParametros())
+
+    def gera_parametros_chamada_funcao(self, parametros: List):
+        res = ''
+        for param in parametros:
+            expr = self.gera_expr(param, '')
+            res += f"{expr},"
+        return res[:-1]
+
+    def gera_chamada_funcao(self, no: ChamadaFuncao):
+        if no.retornaIdentificador().retornaValor() in funcoes_internas.funcoes_internas:
+            return self.gera_chamada_funcao_interna(no)
+        identacao = self.__retornaIdentacaoAtual()
+        ident = no.retornaIdentificador().retornaValor()
+        parametros = self.gera_parametros_chamada_funcao(no.retornaParametros())
+        return f"{identacao}{ident}({parametros})"
 
     def gera_retorne(self, no: Retorna):
         identacao = self.__retornaIdentacaoAtual()
@@ -72,7 +105,10 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
         for param in no:
             nome = param.retornaIdentificador().retornaValor()
             expr = self.gera_expr(param.retornaValor(), '')
-            res += f"{nome} = {expr},"
+            if expr:
+                res += f"{nome} = {expr},"
+            else:
+                res += f"{nome},"
         return res[:-1]
 
     def gera_funcao(self, no: Funcao):
@@ -199,6 +235,10 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
         elif isinstance(no, Texto):
             saida += f"\"{no.retornaValor()}\""
             return saida
+        elif isinstance(no, Boleano):
+            return "True" if no.retornaValor() == valores.verdadeiro else "False"
+        elif isinstance(no, ChamadaFuncao):
+            return self.gera_chamada_funcao(no)
 
     def gera_operador(self, token:Token):
         if token.retornaTipo() == op_arit.soma:

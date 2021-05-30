@@ -17,5 +17,9 @@ inteiro = 'v_inteiro'
 flutuante = 'v_flutuante'
 # Representa que o valor do token é um texto
 texto = 'v_texto'
+# Representa o valor Verdadeiro (bit 1)
+verdadeiro = 'Verdadeiro'
+# Representa o valor Falso (bit 0)
+falso = 'Falso'
 
 todos = [inteiro, flutuante, texto]

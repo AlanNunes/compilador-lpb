@@ -1,3 +1,4 @@
+from componentes_parser.boleano import Boleano
 import componentes_lexer.valores as valores
 import componentes_lexer.tipos_tokens as tipos_tokens
 import componentes_lexer.palavras_chaves as palavras_chaves
@@ -104,6 +105,11 @@ class Lexer:
         if valor in palavras_chaves.todas:
             p_chave = palavras_chaves.retornaPalavraChave(valor)
             return Token(p_chave, pos)
+        if valor in [valores.verdadeiro, valores.falso]:
+            if valor == valores.verdadeiro:
+                return Token(tipo=valores.verdadeiro, pos=pos, val=valores.verdadeiro)
+            else:
+                return Token(tipo=valores.falso, pos=pos, val=valores.falso)
         return Token(tipos_tokens.identificador, pos, valor)
 
     # Retorna um token de valor de texto

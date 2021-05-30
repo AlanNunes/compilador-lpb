@@ -1,10 +1,8 @@
-def soma(x = 0,y = 0):
-	if ((x + y) > 10):
-		return 1
-	else:
-		return 2
+def fora_bolsonaro(param):
+	if (param == True):
+		for i in range(10):
+			print("FORA BOLSONARO CADE AS VACINAS")
 
 
-x = 100
-y = 1000
-None
+
+fora_bolsonaro(True)

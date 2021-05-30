@@ -1,4 +1,7 @@
-from componentes_parser.chamadao_funcao import ChamadaFuncao
+from componentes_parser.boleano import Boleano
+import componentes_lexer.funcoes_internas as funcoes_internas
+from componentes_parser.escreva import Escreva
+from componentes_parser.chamada_funcao import ChamadaFuncao
 from componentes_parser.erros.identificador_nao_encontrado import ErroIdentificadorNaoEncontrado
 from componentes_parser.retorna import Retorna
 from componentes_parser.parametro import Parametro
@@ -86,9 +89,12 @@ class Parser:
         elif tkn_atual.retornaTipo() == tipos_tokens.identificador:
             prox_tkn = self.__retornaTokenAtual(1)
             if prox_tkn.retornaTipo() == op_arit.parent_esq:
-                return self.__parseFuncao()
+                return self.__parseChamadaFuncao()
             self.__avancaToken()
             return Variavel(tkn_atual)
+        elif tkn_atual.retornaTipo() in [valores.verdadeiro, valores.falso]:
+            self.__avancaToken()
+            return Boleano(tkn_atual)
         elif tkn_atual.retornaTipo() == op_arit.parent_esq:
             self.__avancaToken()
             expr = self.__parseExpr()
@@ -250,6 +256,7 @@ class Parser:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
         return RepitaAte(expr=expr, instrucoes=instrucoes)
 
     def __parseRepitaIdentAte(self):
@@ -279,6 +286,7 @@ class Parser:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
         return RepitaIdentAte(ident=ident, expr=expr, instrucoes=instrucoes)
 
     def __parseRepitaComCond(self):
@@ -310,6 +318,7 @@ class Parser:
             msgErro = f"Espera-se '{palavras_chaves.fim_repita}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
+        self.__avancaToken()
         return RepitaComCond(decl_var=decl_var, cond=cond, atrib_var=atrib_var, instrucoes=instrucoes)
 
     def __parseRepita(self):
@@ -406,7 +415,9 @@ class Parser:
         self.__avancaToken()
         instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_funcao, tipos_tokens.EOF]:
-            instrucoes.adicionaInstrucao(self.__parseInstrucao())
+            res_instr = self.__parseInstrucao()
+            if res_instr:
+                instrucoes.adicionaInstrucao(res_instr)
         if self.__retornaTokenAtual().retornaTipo() != palavras_chaves.fim_funcao:
             msgErro = f"Espera-se '{palavras_chaves.fim_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             posErro = self.__retornaTokenAtual().retornaPosicao()
@@ -431,7 +442,7 @@ class Parser:
 
     def __parseChamadaFuncao(self):
         ident = self.__retornaTokenAtual()
-        if not self.__retornaTabelaSimboloAtual().retornaRegistro(ident.retornaValor()):
+        if ident.retornaValor() not in funcoes_internas.funcoes_internas and not self.__retornaTabelaSimboloAtual().retornaRegistro(ident.retornaValor()):
             msgErro = f"A definição da função '{ident.retornaValor()}' não foi encontrada."
             self.__registraErro(ErroIdentificadorNaoEncontrado(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         self.__avancaToken()
@@ -445,6 +456,15 @@ class Parser:
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         self.__avancaToken()
         return ChamadaFuncao(ident=ident, params=parametros)
+
+    # def __parseEscreva(self):
+    #     self.__avancaToken()
+    #     if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_esq:
+    #         msgErro = f"Espera-se '{op_arit.parent_esq}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+    #         self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+    #     self.__avancaToken()
+    #     expr = self.__parseExpr()
+    #     return Escreva(expr)
 
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
@@ -466,6 +486,8 @@ class Parser:
             return self.__parseFuncao()
         elif tkn_atual.retornaTipo() == palavras_chaves.retorna:
             return self.__parseRetorna()
+        # elif tkn_atual.retornaTipo() == funcoes_internas.escreva:
+        #     return self.__parseEscreva()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
         self.__avancaToken()
