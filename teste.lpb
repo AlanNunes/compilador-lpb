@@ -1,3 +1,11 @@
 func inteiro soma(inteiro x = 0, inteiro y = 0) então
-    retorne x + y
+    se (x + y) > 10 então
+        retorne 1
+    senão
+        retorne 2
+    fimse
 fimfunc
+
+inteiro x = 100
+inteiro y = 1000
+somaa(x * x, y + y)

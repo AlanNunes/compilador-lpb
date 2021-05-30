@@ -1,3 +1,6 @@
+from componentes_parser.parametro import Parametro
+from componentes_parser.retorna import Retorna
+from componentes_parser.funcao import Funcao
 from componentes_parser.repita_com_cond import RepitaComCond
 from componentes_parser.repita_id_ate import RepitaIdentAte
 from componentes_parser.repita_ate import RepitaAte
@@ -54,6 +57,32 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
             return self.gera_se(no)
         elif isinstance(no, Repita):
             return self.gera_repita(no)
+        elif isinstance(no, Funcao):
+            return self.gera_funcao(no)
+        elif isinstance(no, Retorna):
+            return self.gera_retorne(no)
+
+    def gera_retorne(self, no: Retorna):
+        identacao = self.__retornaIdentacaoAtual()
+        expr = self.gera_expr(no.retornaExpr(), '')
+        return f"{identacao}return {expr}"
+
+    def gera_parametros(self, no: List[Parametro]):
+        res = ''
+        for param in no:
+            nome = param.retornaIdentificador().retornaValor()
+            expr = self.gera_expr(param.retornaValor(), '')
+            res += f"{nome} = {expr},"
+        return res[:-1]
+
+    def gera_funcao(self, no: Funcao):
+        identacao = self.__retornaIdentacaoAtual()
+        nome = no.retornaIdentificador().retornaValor()
+        parametros = self.gera_parametros(no.retornaParametros())
+        self.__avancaIdentacao()
+        instrucoes = self.gera_instrucoes(no.retornaInstrucao())
+        self.__recuaIdentacao()
+        return f"{identacao}def {nome}({parametros}):\n{instrucoes}"
 
     def gera_repita(self, no: Repita):
         if isinstance(no, RepitaAte):
@@ -84,7 +113,6 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
         identacao = self.__retornaIdentacaoAtual()
         decl_var = self.gera_decl_var(no.retornaDeclVar())
         cond = self.gera_expr(no.retornaCond(), '')
-        # atr_var = self.gera_atr_var(no.retornaAtrVar())
         self.__avancaIdentacao()
         instrucoes = self.gera_instrucoes(no.retornaInstrucoes())
         self.__recuaIdentacao()

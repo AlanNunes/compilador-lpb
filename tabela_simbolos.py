@@ -15,9 +15,14 @@ class TabelaDeSimbolos:
     def verificaRegistroExisteTabelaAtual(self, ident):
         return next((item for item in self._registros if item["ident"] == ident), None)
 
-    def insereRegistro(self, tipo, ident, valor=None):
+    def registraVariavel(self, tipo, ident, valor=None):
         if self.verificaRegistroExisteTabelaAtual(ident) == None:
-            registro = {'tipo': tipo, 'ident': ident, 'valor': valor}
+            registro = {'tipo_registro': 'variavel', 'tipo': tipo, 'ident': ident, 'valor': valor}
+            self._registros.append(registro)
+
+    def registraFuncao(self, tipo, ident, parametros=None):
+        if self.verificaRegistroExisteTabelaAtual(ident) == None:
+            registro = {'tipo_registro': 'funcao', 'tipo': tipo, 'ident': ident, 'parametros': parametros}
             self._registros.append(registro)
 
     def retornaRegistro(self, ident):

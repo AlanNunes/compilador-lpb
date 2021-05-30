@@ -1,3 +1,5 @@
+from componentes_parser.chamadao_funcao import ChamadaFuncao
+from componentes_parser.erros.identificador_nao_encontrado import ErroIdentificadorNaoEncontrado
 from componentes_parser.retorna import Retorna
 from componentes_parser.parametro import Parametro
 from componentes_parser.funcao import Funcao
@@ -33,7 +35,9 @@ class Parser:
         self._tokens = tokens
         self._ind_tkn = 0
         self._erros = []
-        self._tabela_simbolos = TabelaDeSimbolos(escopo="LPB")
+        self._escopo_global = "LPB"
+        self._tabela_simbolos_global = TabelaDeSimbolos(escopo=self._escopo_global)
+        self._tabela_simbolos = self._tabela_simbolos_global
 
     def parse(self) -> No:
         instrucoes = Instrucao()
@@ -64,6 +68,9 @@ class Parser:
 
     def __retornaTabelaSimboloAtual(self):
         return self._tabela_simbolos
+
+    def __retornaTabelaSimbolosGlobal(self):
+        return self._tabela_simbolos_global
 
     def __trocaTabelaSimbolos(self, tabela:TabelaDeSimbolos):
         self._tabela_simbolos = tabela
@@ -131,7 +138,7 @@ class Parser:
             msgErro = f"O identificador '{ident_var.retornaValor()}' já foi definido neste escopo ou no escopo pai"
             self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=pos))
         else:
-            tabela_simb.insereRegistro(tipo=tkn_tipo_var.retornaTipo(), ident=ident_var.retornaValor())
+            tabela_simb.registraVariavel(tipo=tkn_tipo_var.retornaTipo(), ident=ident_var.retornaValor())
         return no_declaracao_var
 
     def __parseAtribuicaoVariavel(self):
@@ -334,7 +341,8 @@ class Parser:
         expr = self.__parseExpr()
         return Retorna(expr)
 
-    def __parseParametro(self):
+    # Faz o parse da definição de um parâmetro.
+    def __parseDefParametro(self):
         tipo = self.__retornaTokenAtual()
         if tipo.retornaTipo() not in palavras_chaves.todos_tipos_funcao:
             msgErro = f"Espera-se '{palavras_chaves.todos_tipos_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
@@ -351,10 +359,11 @@ class Parser:
             valor = self.__parseExpr()
         return Parametro(tipo=tipo, ident=ident, val=valor)
 
-    def __parseParametrosFuncao(self):
+    # Faz o parse da definição dos parâmetros que a função irá receber.
+    def __parseDefParametrosFuncao(self):
         parametros = []
         while self.__retornaTokenAtual().retornaTipo() not in [op_arit.parent_dir, tipos_tokens.EOF]:
-            parametros.append(self.__parseParametro())
+            parametros.append(self.__parseDefParametro())
             if self.__retornaTokenAtual().retornaTipo() == op_arit.parent_dir:
                 break
             if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.virgula:
@@ -365,21 +374,28 @@ class Parser:
 
     def __parseFuncao(self):
         self.__avancaToken()
+        tabela_simb_pai = self.__retornaTabelaSimboloAtual()
+        tabela_simb_func = TabelaDeSimbolos(pai=tabela_simb_pai)
+        self.__trocaTabelaSimbolos(tabela_simb_func)
         if self.__retornaTokenAtual().retornaTipo() not in palavras_chaves.todos_tipos_funcao:
             msgErro = f"Espera-se '{palavras_chaves.todos_tipos_funcao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
-        tipo = self.__retornaTokenAtual()
+        tipo = self.__retornaTokenAtual().retornaTipo()
         self.__avancaToken()
         if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.identificador:
             msgErro = f"Espera-se '{tipos_tokens.identificador}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         ident = self.__retornaTokenAtual()
+        registroJaExiste = self.__retornaTabelaSimbolosGlobal().retornaRegistro(ident.retornaValor())
+        if registroJaExiste:
+            msgErro = f"Este identificador já foi declarado: '{tipos_tokens.identificador}'."
+            self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         self.__avancaToken()
         if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_esq:
             msgErro = f"Espera-se '{op_arit.parent_esq}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         self.__avancaToken()
-        parametros = self.__parseParametrosFuncao()
+        parametros = self.__parseDefParametrosFuncao()
         if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_dir:
             msgErro = f"Espera-se '{op_arit.parent_dir}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
@@ -396,7 +412,39 @@ class Parser:
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
         self.__avancaToken()
+        self.__trocaTabelaSimbolos(tabela_simb_pai)
+        tabela_simb_pai.registraFuncao(tipo=tipo, ident=ident.retornaValor(), parametros=parametros)
         return Funcao(ident=ident, params=parametros, instrucao=instrucoes)
+
+    def __parseParametrosPassadosParaFunc(self):
+        parametros = []
+        while self.__retornaTokenAtual().retornaTipo() not in [op_arit.parent_dir, tipos_tokens.EOF]:
+            expr = self.__parseExpr()
+            parametros.append(expr)
+            if self.__retornaTokenAtual().retornaTipo() == op_arit.parent_dir:
+                break
+            if self.__retornaTokenAtual().retornaTipo() != tipos_tokens.virgula:
+                msgErro = f"Espera-se '{tipos_tokens.virgula}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+                self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+            self.__avancaToken()
+        return parametros
+
+    def __parseChamadaFuncao(self):
+        ident = self.__retornaTokenAtual()
+        if not self.__retornaTabelaSimboloAtual().retornaRegistro(ident.retornaValor()):
+            msgErro = f"A definição da função '{ident.retornaValor()}' não foi encontrada."
+            self.__registraErro(ErroIdentificadorNaoEncontrado(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_esq:
+            msgErro = f"Espera-se '{op_arit.parent_esq}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        parametros = self.__parseParametrosPassadosParaFunc()
+        if self.__retornaTokenAtual().retornaTipo() != op_arit.parent_dir:
+            msgErro = f"Espera-se '{op_arit.parent_dir}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
+            self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
+        self.__avancaToken()
+        return ChamadaFuncao(ident=ident, params=parametros)
 
     def __parseInstrucao(self):
         tkn_atual = self.__retornaTokenAtual()
@@ -406,6 +454,8 @@ class Parser:
             prox_tkn = self.__retornaTokenAtual(1)
             if prox_tkn.retornaTipo() == op_arit.op_atribuicao:
                 return self.__parseAtribuicaoVariavel()
+            elif prox_tkn.retornaTipo() == op_arit.parent_esq:
+                return self.__parseChamadaFuncao()
         elif tkn_atual.retornaTipo() == palavras_chaves.se:
             return self.__parseSe()
         elif tkn_atual.retornaTipo() == palavras_chaves.senao:
