@@ -1,0 +1,25 @@
+{
+    "name": "lpb",
+    "displayName": "LPB",
+    "description": "Linguagem LPB",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.56.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "lpb",
+            "aliases": ["Linguagem de Programação Brasileira", "lpb"],
+            "extensions": [".lpb"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "lpb",
+            "scopeName": "source.lpb",
+            "path": "./syntaxes/lpb.tmLanguage.json"
+        }]
+    }
+}

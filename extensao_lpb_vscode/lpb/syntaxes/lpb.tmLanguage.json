@@ -1,0 +1,77 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Linguagem de Programação Brasileira",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#constantes-var-funcao"
+		},
+		{
+            "match": "//.*",
+            "name": "comment.line.number-sign"
+        }
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.lpb",
+					"match": "\\b(se|então|senão|senão se|fimse|enquanto|fimenquanto|repita|fimrepita|retorne|até|func|fimfunc|e|ConverteParaInteiro)\\b"
+				},
+				{
+					"name": "keyword.operator.comparison.lpb",
+					"match": "(!=|>|<|>=|<=|==)"
+				},
+				{
+					"name": "keyword.operator.assignment.lpb",
+					"match": "(=)"
+				},
+				{
+					"name": "keyword.operator.arithmetic.lpb",
+					"match": "(\\+|\\-|\\*|\\/|\\^)"
+				}
+		]
+		},
+		"strings": {
+			"name": "string.quoted.double.lpb",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.lpb",
+					"match": "\\\\."
+				}
+			]
+		},
+		"constantes-var-funcao": {
+			"patterns": [
+				{
+					"match": "(?<!\\$)\\b(Verdadeiro|Falso|null)\\b(?!\\$)",
+					"name": "constant.language.lpb"
+				},
+				{
+					"match": "(?<!\\$)\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)\\b(?!\\$)",
+					"name": "constant.numeric.lpb"
+				},
+				{
+					"match": "(boleano\\b|texto\\b|inteiro\\b|flutuante\\b|vazio\\b)",
+					"name": "entity.name.type.lpb"
+				},
+				{
+					"match": "([_$]*[a-z][a-zA-Z0-9_$]*)(<|\\(|\\s+=>)",
+					"captures": {
+						"1": {
+							"name": "entity.name.function.lpb"
+						}
+					}
+				}
+			]
+		}
+	},
+	"scopeName": "source.lpb"
+}
