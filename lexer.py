@@ -174,6 +174,9 @@ class Lexer:
         if operador == '+':
             self.__avancaColuna()
             return Token(op_arit.soma, pos)
+        elif operador == '-':
+            self.__avancaColuna()
+            return Token(op_arit.sub, pos)
         elif operador == '/':
             self.__avancaColuna()
             return Token(op_arit.div, pos)

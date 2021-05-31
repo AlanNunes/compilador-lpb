@@ -1,8 +1,7 @@
-def fora_bolsonaro(param):
-	if (param == True):
-		for i in range(10):
-			print("FORA BOLSONARO CADE AS VACINAS")
+def fib(n):
+	if (n <= 1):
+		return n
+	else:
+		return (fib((n - 1)) + fib((n - 2)))
 
-
-
-fora_bolsonaro(True)
+print(fib(7))

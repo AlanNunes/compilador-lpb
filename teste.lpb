@@ -1,9 +1,9 @@
-func vazio fora_bolsonaro(boleano param) então
-    se param == Verdadeiro então
-        repita até 10 então
-            escreva("FORA BOLSONARO CADE AS VACINAS")
-        fimrepita
+func inteiro fib(inteiro n) então
+    se n <= 1 então
+        retorne n
+    senão
+        retorne fib(n-1) + fib(n-2)
     fimse
 fimfunc
 
-fora_bolsonaro(Verdadeiro)
+escreva(fib(7))

@@ -346,6 +346,7 @@ class Parser:
         self.__trocaTabelaSimbolos(tabela_simb_repita)
 
     def __parseRetorna(self) -> Retorna:
+        teste = self.__retornaTokenAtual()
         self.__avancaToken()
         expr = self.__parseExpr()
         return Retorna(expr)
@@ -413,6 +414,7 @@ class Parser:
             msgErro = f"Espera-se '{palavras_chaves.entao}' ao invés de '{self.__retornaTokenAtual().retornaValor()}'."
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=self.__retornaTokenAtual().retornaPosicao()))
         self.__avancaToken()
+        tabela_simb_pai.registraFuncao(tipo=tipo, ident=ident.retornaValor(), parametros=parametros)
         instrucoes = Instrucao()
         while self.__retornaTokenAtual().retornaTipo() not in [palavras_chaves.fim_funcao, tipos_tokens.EOF]:
             res_instr = self.__parseInstrucao()
@@ -424,7 +426,7 @@ class Parser:
             self.__registraErro(ErroSintaxe(msg=msgErro, pos=posErro))
         self.__avancaToken()
         self.__trocaTabelaSimbolos(tabela_simb_pai)
-        tabela_simb_pai.registraFuncao(tipo=tipo, ident=ident.retornaValor(), parametros=parametros)
+        # tabela_simb_pai.registraFuncao(tipo=tipo, ident=ident.retornaValor(), parametros=parametros)
         return Funcao(ident=ident, params=parametros, instrucao=instrucoes)
 
     def __parseParametrosPassadosParaFunc(self):
@@ -486,8 +488,6 @@ class Parser:
             return self.__parseFuncao()
         elif tkn_atual.retornaTipo() == palavras_chaves.retorna:
             return self.__parseRetorna()
-        # elif tkn_atual.retornaTipo() == funcoes_internas.escreva:
-        #     return self.__parseEscreva()
         elif tkn_atual.retornaTipo() in [valores.texto, valores.inteiro, valores.flutuante, op_arit.parent_esq, tipos_tokens.identificador]:
             return self.__parseExpr()
         self.__avancaToken()

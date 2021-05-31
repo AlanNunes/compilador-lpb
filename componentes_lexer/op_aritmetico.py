@@ -16,4 +16,4 @@ parent_esq = '('
 # Representa o sinal parêntese direito
 parent_dir = ')'
 
-todos = [soma, div, mult, pot, op_atribuicao, parent_esq, parent_dir]
+todos = [soma, sub, div, mult, pot, op_atribuicao, parent_esq, parent_dir]
