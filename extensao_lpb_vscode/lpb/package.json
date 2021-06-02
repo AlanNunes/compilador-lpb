@@ -1,8 +1,13 @@
 {
     "name": "lpb",
-    "displayName": "LPB",
-    "description": "Linguagem LPB",
-    "version": "0.0.1",
+    "displayName": "LPB - Linguagem de Programação Brasileira",
+    "description": "Syntax Highlighting para programar na linguagem LPB - Linguagem de Programação Brasileira.",
+    "version": "0.3.0",
+    "publisher": "LPB",
+    "repository": {
+        "url": "https://github.com/AlanNunes/compilador-lpb"
+    },
+    "icon": "media/LPB.png",
     "engines": {
         "vscode": "^1.56.0"
     },
@@ -10,16 +15,25 @@
         "Programming Languages"
     ],
     "contributes": {
-        "languages": [{
-            "id": "lpb",
-            "aliases": ["Linguagem de Programação Brasileira", "lpb"],
-            "extensions": [".lpb"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "lpb",
-            "scopeName": "source.lpb",
-            "path": "./syntaxes/lpb.tmLanguage.json"
-        }]
+        "languages": [
+            {
+                "id": "lpb",
+                "aliases": [
+                    "Linguagem de Programação Brasileira",
+                    "lpb"
+                ],
+                "extensions": [
+                    ".lpb"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "lpb",
+                "scopeName": "source.lpb",
+                "path": "./syntaxes/lpb.tmLanguage.json"
+            }
+        ]
     }
 }
