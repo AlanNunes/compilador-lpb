@@ -4,7 +4,7 @@ Este é um projeto desenvolvido no meu TCC (Trabalho de Conclusão de Curso) ond
 
 # Instalando extensão para Syntax Highlight no VS Code
 
-Está disponível no vs code uma extensão para suporte da Linguagem de Programação Brasileira. Esta extensão não compila a LPB, ela apenas possui um syntax highlighting. Para compilar a LPB é necessário baixar este repositório e executar o arquivo ``main.py`` ou baixar a release [v1.0-alpha](https://github.com/AlanNunes/compilador-lpb/releases)
+Está disponível no vs code uma extensão para suporte da Linguagem de Programação Brasileira. Esta extensão não compila a LPB, ela apenas possui um syntax highlighting. Para compilar a LPB é necessário baixar este repositório e executar o arquivo ``main.py`` ou baixar a release [v1.0-alpha](https://github.com/AlanNunes/compilador-lpb/releases).
 
 ![Extensão VS Code LPB](https://i.imgur.com/AT4tdYq.gif)
 
