@@ -21,7 +21,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.lpb",
-					"match": "\\b(se|então|senão|senão se|fimse|enquanto|fimenquanto|repita|fimrepita|retorne|até|func|fimfunc|e|ConverteParaInteiro)\\b"
+					"match": "\\b(se|então|senão|senão se|fimse|enquanto|fimenquanto|repita|fimrepita|retorne|até|func|fimfunc|e|ou|não|ConverteParaInteiro)\\b"
 				},
 				{
 					"name": "keyword.operator.comparison.lpb",
