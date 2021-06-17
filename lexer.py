@@ -4,6 +4,7 @@ import componentes_lexer.tipos_tokens as tipos_tokens
 import componentes_lexer.palavras_chaves as palavras_chaves
 import componentes_lexer.op_relational as op_rel
 import componentes_lexer.op_aritmetico as op_arit
+import componentes_lexer.op_logico as op_logico
 from componentes_lexer.posicao import Posicao
 from token_ import Token
 
@@ -110,6 +111,12 @@ class Lexer:
                 return Token(tipo=valores.verdadeiro, pos=pos, val=valores.verdadeiro)
             else:
                 return Token(tipo=valores.falso, pos=pos, val=valores.falso)
+        if valor == op_logico.e:
+            return Token(tipo=op_logico.e, pos=pos, val=op_logico.e)
+        elif valor == op_logico.ou:
+            return Token(tipo=op_logico.ou, pos=pos, val=op_logico.ou)
+        elif valor == op_logico.nao:
+            return Token(tipo=op_logico.nao, pos=pos, val=op_logico.nao)
         return Token(tipos_tokens.identificador, pos, valor)
 
     # Retorna um token de valor de texto

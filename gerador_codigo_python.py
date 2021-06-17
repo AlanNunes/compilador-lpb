@@ -21,6 +21,7 @@ from componentes_parser.se import Se
 from componentes_parser.senaose import SenaoSe
 import componentes_lexer.op_aritmetico as op_arit
 import componentes_lexer.op_relational as op_rel
+import componentes_lexer.op_logico as op_logico
 from gerador_codigo import GeradorDeCodigo
 from token_ import Token
 from componentes_parser.declaracao_variavel import DeclaracaoVariavel
@@ -289,3 +290,9 @@ class GeradorDeCodigoParaPython(GeradorDeCodigo):
             return "<="
         elif token.retornaTipo() == op_rel.igualdade:
             return "=="
+        elif token.retornaTipo() == op_logico.e:
+            return "and"
+        elif token.retornaTipo() == op_logico.ou:
+            return "or"
+        elif token.retornaTipo() == op_logico.nao:
+            return "not"

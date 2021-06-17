@@ -1,9 +1,6 @@
-func inteiro fib(inteiro n) então
-    se n <= 1 então
-        retorne n
-    senão
-        retorne fib(n-1) + fib(n-2)
-    fimse
-fimfunc
-
-escreva(fib(7))
+inteiro idade = ConverteParaInteiro(leia("Digite sua idade"))
+se idade >= 18 e idade <= 30 então
+    escreva("Você é um jovem ")
+senão
+    escreva("Você tá ficando velho")
+fimse

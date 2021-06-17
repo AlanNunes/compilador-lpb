@@ -1,5 +1,6 @@
 from componentes_parser.boleano import Boleano
 import componentes_lexer.funcoes_internas as funcoes_internas
+import componentes_lexer.op_logico as op_logico
 from componentes_parser.escreva import Escreva
 from componentes_parser.chamada_funcao import ChamadaFuncao
 from componentes_parser.erros.identificador_nao_encontrado import ErroIdentificadorNaoEncontrado
@@ -116,7 +117,7 @@ class Parser:
     def __parseExpr(self):
         fat_esq = self.__parseTermo()
         tkn_atual = self.__retornaTokenAtual()
-        while tkn_atual.retornaTipo() in [op_arit.sub, op_arit.soma, op_rel.igualdade]:
+        while tkn_atual.retornaTipo() in [op_arit.sub, op_arit.soma, op_rel.igualdade, op_logico.e, op_logico.ou]:
             tkn_op = self.__retornaTokenAtual()
             self.__avancaToken()
             fat_dir = self.__parseTermo()

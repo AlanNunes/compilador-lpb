@@ -11,6 +11,7 @@ print('# Repositório: https://github.com/AlanNunes/compilador-lpb')
 print('# Autor: Alan Nunes (https://github.com/AlanNunes)')
 print('============================================================')
 try:
+    sys.argv.append("teste.lpb")
     if len(sys.argv) <= 1:
         print('Você precisa passar o nome do arquivo como argumento.')
     else:
