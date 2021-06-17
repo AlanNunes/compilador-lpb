@@ -2,7 +2,7 @@
     "name": "lpb",
     "displayName": "LPB - Linguagem de Programação Brasileira",
     "description": "Syntax Highlighting para programar na linguagem LPB - Linguagem de Programação Brasileira.",
-    "version": "0.3.0",
+    "version": "0.5.0",
     "publisher": "LPB",
     "repository": {
         "url": "https://github.com/AlanNunes/compilador-lpb"
@@ -33,6 +33,30 @@
                 "language": "lpb",
                 "scopeName": "source.lpb",
                 "path": "./syntaxes/lpb.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+			{
+				"language": "lpb",
+				"path": "./snippets/lpb.json"
+			}
+		],
+        "taskDefinitions": [
+            {
+                "type": "rake",
+                "required": [
+                    "task"
+                ],
+                "properties": {
+                    "task": {
+                        "type": "string",
+                        "description": "Esta task invoca o compilador da LPB para executar o algoritmo."
+                    },
+                    "file": {
+                        "type": "string",
+                        "file": "./tasks/tasks.json"
+                    }
+                }
             }
         ]
     }
