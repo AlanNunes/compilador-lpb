@@ -69,6 +69,14 @@
 							"name": "entity.name.function.lpb"
 						}
 					}
+				},
+				{
+					"match": "\\b(ConverteParaInteiro|ConverteParaFlutuante|ConverteParaTexto)\\b",
+					"captures": {
+						"1": {
+							"name": "support.function.lpb"
+						}
+					}
 				}
 			]
 		}
