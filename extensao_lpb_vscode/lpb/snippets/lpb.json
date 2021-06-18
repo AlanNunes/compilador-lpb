@@ -20,7 +20,7 @@
 	"Laço de repetição - condicional": {
 		"prefix": "repita",
 		"body": [
-			"repita ${1:declaração variável}; ${2:condição}; ${3:vezes} então",
+			"repita ${1:declaração variável}; ${2:condição}; ${3:atribuição} então",
 			"\t$0",
 			"fimrepita"
 		],
