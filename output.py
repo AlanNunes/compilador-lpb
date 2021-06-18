@@ -1,7 +1,5 @@
-def fib(n):
-	if (n <= 1):
-		return n
-	else:
-		return (fib((n - 1)) + fib((n - 2)))
+x = 0
+for x in range(10):
+	print(str(x))
+	x = (x + 1)
 
-print(fib(7))

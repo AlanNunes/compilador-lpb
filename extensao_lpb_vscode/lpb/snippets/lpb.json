@@ -1,13 +1,26 @@
 {
-	// Place your snippets for lpb here. Each snippet is defined under a snippet name and has a prefix, body and 
-	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
-	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
-	// same ids are connected.
-	// Example:
-	"Laço de repetição": {
+	"Laço de repetição - até": {
 		"prefix": "repita",
 		"body": [
 			"repita até ${1:vezes} então",
+			"\t$0",
+			"fimrepita"
+		],
+		"description": "Repete N vezes"
+	},
+	"Laço de repetição - n até": {
+		"prefix": "repita",
+		"body": [
+			"repita ${1:variável} até ${2:vezes} então",
+			"\t$0",
+			"fimrepita"
+		],
+		"description": "Repete N vezes"
+	},
+	"Laço de repetição - condicional": {
+		"prefix": "repita",
+		"body": [
+			"repita ${1:variável}; ${2:condição} até ${3:vezes} então",
 			"\t$0",
 			"fimrepita"
 		],
@@ -30,5 +43,26 @@
 			"fimfunc"
 		],
 		"description": "Define uma função"
+	},
+	"Converte para Texto": {
+		"prefix": "converte",
+		"body": [
+			"ConverteParaTexto(${1:valor})$0"
+		],
+		"description": "Converte um valor para texto"
+	},
+	"Converte para Inteiro": {
+		"prefix": "converte",
+		"body": [
+			"ConverteParaInteiro(${1:valor})$0"
+		],
+		"description": "Converte um valor para inteiro"
+	},
+	"Converte para Flutuante": {
+		"prefix": "converte",
+		"body": [
+			"ConverteParaFlutuante(${1:valor})$0"
+		],
+		"description": "Convert um valor para flutuante"
 	}
 }

@@ -121,8 +121,8 @@ class Lexer:
 
     # Retorna um token de valor de texto
     # Exemplo: 10
-    def __retornaNumero(self) -> Token:
-        valor = ''
+    def __retornaNumero(self, sinal_positivo=True) -> Token:
+        valor = '' if sinal_positivo else '-'
         pos = self.__retornaPosicaoAtual()
         while not self.__EOF() and self.__retornaCaracterAtual() in valores.valor_numerico:
             valor += self.__retornaCaracterAtual()
@@ -220,6 +220,14 @@ class Lexer:
             elif caracter_atual in valores.caracteres:
                 tkn_ident = self.__retornaIdentificador()
                 self.__adicionaToken(tkn_ident)
+            elif caracter_atual in [op_arit.sub, op_arit.soma] and caracter_posterior in valores.valor_numerico:
+                if caracter_atual == op_arit.sub:
+                    self.__avancaColuna()
+                    tkn_num = self.__retornaNumero(False)
+                elif caracter_atual == op_arit.soma:
+                    self.__avancaColuna()
+                    tkn_num = self.__retornaNumero(True)
+                self.__adicionaToken(tkn_num)
             elif caracter_atual in valores.digitos:
                 tkn_num = self.__retornaNumero()
                 self.__adicionaToken(tkn_num)

@@ -2,7 +2,7 @@
     "name": "lpb",
     "displayName": "LPB - Linguagem de Programação Brasileira",
     "description": "Syntax Highlighting para programar na linguagem LPB - Linguagem de Programação Brasileira.",
-    "version": "0.6.0",
+    "version": "1.0.0",
     "publisher": "LPB",
     "repository": {
         "url": "https://github.com/AlanNunes/compilador-lpb"
