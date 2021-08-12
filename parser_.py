@@ -1,3 +1,4 @@
+from componentes_parser.erros.tipo_incompativel import ErroTipoIncompativel
 from componentes_parser.boleano import Boleano
 import componentes_lexer.funcoes_internas as funcoes_internas
 import componentes_lexer.op_logico as op_logico
@@ -157,10 +158,15 @@ class Parser:
         valor = self.__parseExpr()
         no_atrib_var = AtribuicaoVariavel(ident=ident_var, op=op, val=valor)
         tabela_simb = self.__retornaTabelaSimboloAtual()
-        if not tabela_simb.retornaRegistro(ident_var.retornaValor()):
+        variavel_tabela_simb = tabela_simb.retornaRegistro(ident_var.retornaValor())
+        if not variavel_tabela_simb:
             msgErro = f"O identificador '{ident_var.retornaValor()}' não foi encontrado neste escopo."
             posErro = self.__retornaTokenAtual().retornaPosicao()
             self.__registraErro(ErroIdentJaDefinidoNoEscopo(msg=msgErro, pos=posErro))
+        if variavel_tabela_simb['tipo'] != valor.retornaToken().retornaTipo():
+            msgErro = f"O identificador '{ident_var.retornaValor()}' é incompatível com o tipo '{valor.retornaToken().retornaTipo()}'"
+            posErro = self.__retornaTokenAtual().retornaPosicao()
+            self.__registraErro(ErroTipoIncompativel(msg=msgErro, pos=posErro))
         return no_atrib_var
 
     def __parseSenao(self) -> List[Instrucao]:
